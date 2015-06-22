@@ -46,13 +46,18 @@ sub wait_unix_sock {
     } else {
         ($path, $max_wait) = @_;
     }
+
     $max_wait ||= 10;
-    while (--$max_wait > 0) {
+    my $waited = 0;
+    my $sleep  = 0.001;
+    while ($waited < $max_wait) {
         IO::Socket::UNIX->new(
             Type => SOCK_STREAM,
             Peer => $path,
         ) && return;
-        sleep 1;
+        Time::HiRes::sleep $sleep;
+        $waited += $sleep;
+        $sleep *= 2;
     }
 }
 
